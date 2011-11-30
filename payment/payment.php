@@ -23,10 +23,32 @@ $ulinkService = new UlinkService(
     $maksa->getDefaultResponseUrl($cart)
 );
 
+$order = array();
+foreach($cart->getProducts() as $key => $product) {
+    $item = array(
+        'name'         => $product['name'],
+        'description'  => $product['description_short'],
+        'oneItemPrice' => (string)$product['price_wt'],
+        'quantity'     => $product['cart_quantity'],
+    );
+    $order[] = $item;
+}
+
+$shopping = $cart->getOrderTotal(true, Cart::ONLY_SHIPPING);
+if ($shopping > 0) {
+    $order[] = array(
+        'name'         => 'Shipping',
+        'description'  => '',
+        'oneItemPrice' => (string)$cart->getOrderTotal(true, Cart::ONLY_SHIPPING),
+        'quantity'     => 1,
+    );
+}
+
 $signedRequest = $ulinkService->encrypt(
     array(
         'clientTransactionId' => $cart->id,
         'amount'              => (string) $cart->getOrderTotal(true, Cart::BOTH),
+        'order'               => $order
     )
 );
 

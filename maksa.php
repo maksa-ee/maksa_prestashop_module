@@ -5,11 +5,11 @@ class Maksa extends PaymentModule
     private $_html       = '';
     private $_postErrors = array();
 
-    protected $paymentUrl         = null;
+    protected $paymentUrl         = 'http://maksa.ee/pay';
     protected $clientId           = null;
     protected $publicKey          = null;
     protected $privateKey         = null;
-    protected $defaultCurrency    = null;
+    protected $defaultCurrency    = 'EUR';
 
     public function getPaymentUrl()
     {
@@ -65,8 +65,9 @@ class Maksa extends PaymentModule
         'MAKSA_CLIENT_ID',
         'MAKSA_PUBLIC_KEY',
         'MAKSA_PRIVATE_KEY',
-        'MAKSA_DEFAULT_CURRENCY',
     );
+
+    protected $maksaTrans = array();
 
     public function __construct()
     {
@@ -83,9 +84,23 @@ class Maksa extends PaymentModule
         $this->description = $this->l('Maksa.ee ...');
     }
 
+    protected function getSmarty()
+    {
+        global $smarty;
+
+        return $smarty;
+    }
+
     protected function initConfig()
     {
         $config = Configuration::getMultiple($this->configurationKeys);
+
+        $this->maksaTrans = array(
+            'payment_url' => $this->l('Paiment URL'),
+            'client_id'   => $this->l('Client ID'),
+            'public_key'  => $this->l('Maksa Public Key'),
+            'private_key' => $this->l('Your Private Key'),
+        );
 
         foreach ($this->configurationKeys as $key) {
             $valKey = strtolower(str_replace('MAKSA_', '', $key));
@@ -100,10 +115,6 @@ class Maksa extends PaymentModule
             if (isset($config[$key])) {
                 $this->{$defKey} = $config[$key];
             }
-        }
-
-        if (!$this->defaultCurrency) {
-            $this->defaultCurrency = 'EUR';
         }
     }
 
@@ -132,13 +143,11 @@ class Maksa extends PaymentModule
 
     public function hookPayment($params)
     {
-        global $smarty;
-
         if (!$this->active) {
             return ;
         }
 
-        $smarty->assign('logo', _MODULE_DIR_.$this->name.'/maksa30.png');
+        $this->getSmarty()->assign('logo', _MODULE_DIR_.$this->name.'/maksa30.png');
         return $this->display(__FILE__, 'maksa.tpl');
     }
 
@@ -148,9 +157,7 @@ class Maksa extends PaymentModule
             return;
         }
 
-        global $smarty;
-
-        $smarty->assign(
+        $this->getSmarty()->assign(
             array(
                 'maksa_url'      => $paymentUrl,
                 'signed_request' => $signedRequest,
@@ -184,7 +191,7 @@ class Maksa extends PaymentModule
             foreach ($this->configurationKeys as $key) {
                 $valKey = strtolower(str_replace('MAKSA_', '', $key));
                 if (!Tools::getValue($valKey)) {
-                    $this->_postErrors[] = $this->l($valKey.' are required.');
+                    $this->_postErrors[] = $this->l('Required: ') . (isset($this->maksaTrans[$valKey]) ? $this->maksaTrans[$valKey] : $valKey);
                     return;
                 }
             }
@@ -226,7 +233,7 @@ class Maksa extends PaymentModule
                         if (!in_array($key, array('MAKSA_PUBLIC_KEY', 'MAKSA_PRIVATE_KEY'))) {
                         $this->_html .= '
                     <tr>
-                        <td width="130" style="height: 35px;">'.$this->l($valKey).'</td>
+                        <td width="130" style="height: 35px;">'.(isset($this->maksaTrans[$valKey]) ? $this->maksaTrans[$valKey] : $valKey).'</td>
                         <td>
                             <input type="text" name="'.$valKey.'" value="'.$value.'" style="width: 300px;" />
                         </td>
@@ -234,7 +241,7 @@ class Maksa extends PaymentModule
                         } else {
                         $this->_html .= '
                     <tr>
-                        <td width="130" style="vertical-align: top;">'.$this->l($valKey).'</td>
+                        <td width="130" style="vertical-align: top;">'.(isset($this->maksaTrans[$valKey]) ? $this->maksaTrans[$valKey] : $valKey).'</td>
                         <td style="padding-bottom: 15px;">
                             <textarea name="'.$valKey.'" rows="4" cols="53">'.$value.'</textarea>
                         </td>
