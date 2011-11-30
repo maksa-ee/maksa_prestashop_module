@@ -30,6 +30,6 @@ $signedRequest = $ulinkService->encrypt(
     )
 );
 
-echo $maksa->execPayment($signedRequest);
+echo $maksa->execPayment($maksa->getPaymentUrl(), $signedRequest);
 
 include(_PS_ROOT_DIR_.'/footer.php');

@@ -5,10 +5,16 @@ class Maksa extends PaymentModule
     private $_html       = '';
     private $_postErrors = array();
 
+    protected $paymentUrl         = null;
     protected $clientId           = null;
     protected $publicKey          = null;
     protected $privateKey         = null;
     protected $defaultCurrency    = null;
+
+    public function getPaymentUrl()
+    {
+        return $this->paymentUrl;
+    }
 
     public function getClientId()
     {
@@ -55,6 +61,7 @@ class Maksa extends PaymentModule
     }
 
     protected $configurationKeys  = array(
+        'MAKSA_PAYMENT_URL',
         'MAKSA_CLIENT_ID',
         'MAKSA_PUBLIC_KEY',
         'MAKSA_PRIVATE_KEY',
@@ -135,7 +142,7 @@ class Maksa extends PaymentModule
         return $this->display(__FILE__, 'maksa.tpl');
     }
 
-    public function execPayment($signedRequest)
+    public function execPayment($paymentUrl, $signedRequest)
     {
         if (!$this->active) {
             return;
@@ -145,7 +152,7 @@ class Maksa extends PaymentModule
 
         $smarty->assign(
             array(
-                'maksa_url'      => 'http://maksa.ee/test',
+                'maksa_url'      => $paymentUrl,
                 'signed_request' => $signedRequest,
             )
         );
