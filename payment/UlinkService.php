@@ -1,0 +1,266 @@
+<?php
+
+/*
+ * Copyright (c) 2011 "Cravler", http://github.com/cravler
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+require_once "UlinkException.php";
+spl_autoload_register(function($className)
+{
+    $path = str_replace(array("_", "\\"), "/", $className);
+    $parts = explode('/', $path);
+    if ($parts[0] == 'Ulink') {
+        require_once '../ulink/src/' . $path . ".php";
+        return true;
+    }
+    else if (function_exists('__autoload') AND __autoload($className)) {
+        return true;
+    }
+    return false;
+});
+
+/**
+ * @author Cravler <http://github.com/cravler>
+ */
+class UlinkService
+{
+    /**
+     * @var string
+     */
+    private $clientId = '';
+    /**
+     * @var string
+     */
+    private $publicKeyPem = null;
+    /**
+     * @var string
+     */
+    private $privateKeyPem = null;
+    /**
+     * @var string
+     */
+    private $defaultCurrency = null;
+    /**
+     * @var string
+     */
+    private $defaultGoBackUrl = null;
+    /**
+     * @var string
+     */
+    private $defaultResponseUrl = null;
+
+    /**
+     * @param string $clientId
+     * @param string $keyPath
+     * @param string $publicKey
+     * @param string $privateKey
+     * @param string $defaultCurrency
+     */
+    public function __construct($clientId, $publicKey, $privateKey, $defaultCurrency = null, $defaultGoBackUrl = null, $defaultResponseUrl = null)
+    {
+        $this->clientId           = $clientId;
+        $this->publicKeyPem       = $publicKey;
+        $this->privateKeyPem      = $privateKey;
+        $this->defaultCurrency    = $defaultCurrency;
+        $this->defaultGoBackUrl   = $defaultGoBackUrl;
+        $this->defaultResponseUrl = $defaultResponseUrl;
+    }
+
+    /**
+     * @return string
+     */
+    private function getClientId()
+    {
+        return $this->clientId;
+    }
+
+    /**
+     * @return string
+     */
+    private function getPublicKeyPem()
+    {
+        return $this->publicKeyPem;
+    }
+
+    /**
+     * @return string
+     */
+    private function getPrivateKeyPem()
+    {
+        return $this->privateKeyPem;
+    }
+
+    /**
+     * @return string
+     */
+    private function getDefaultCurrency()
+    {
+        return $this->defaultCurrency;
+    }
+
+    /**
+     * @return string
+     */
+    private function getDefaultGoBackUrl()
+    {
+        return $this->defaultGoBackUrl;
+    }
+
+    /**
+     * @return string
+     */
+    private function getDefaultResponseUrl()
+    {
+        return $this->defaultResponseUrl;
+    }
+
+    /**
+     * @param array $data
+     * @return string
+     */
+    public function encrypt($data = array())
+    {
+        $defaults = array(
+            'clientTransactionId' => '',
+            'amount'              => '0',
+            'order'               => array(),
+            'currency'            => null,
+            'goBackUrl'           => null,
+            'responseUrl'         => null,
+        );
+
+        $data = array_merge($defaults, $data);
+
+        $request = new \Ulink\PaymentRequest();
+        $request->setClientTransactionId($data['clientTransactionId']);
+        $request->setAmount(new \Ulink\Money($data['amount']));
+        $request->setCurrency($data['currency'] ? $data['currency'] : $this->getDefaultCurrency());
+        $request->setGoBackUrl($data['goBackUrl'] ? $data['goBackUrl'] : $this->getDefaultGoBackUrl());
+        $request->setResponseUrl($data['responseUrl'] ? $data['responseUrl'] : $this->getDefaultResponseUrl());
+
+        if (count($data['order'])) {
+            $_order = new \Ulink\Order();
+            /**
+             * $item = array(
+             *     'name'         => 'Some Name',
+             *     'description'  => 'Some Description',
+             *     'oneItemPrice' => '10.90',
+             *     'quantity'     => 5
+             * );
+             */
+            foreach ($data['order'] as $item) {
+                $_order->addItem(
+                    new \Ulink\OrderItem(
+                        $item['name'],
+                        $item['description'],
+                        new \Ulink\Money($item['oneItemPrice']),
+                        (isset($item['quantity']) ? $item['quantity'] : 1)
+                    )
+                );
+            }
+            $request->setOrder($_order);
+        }
+
+        $requestJson = $request->toJson();
+
+        $requestJson = \Ulink\CryptoUtils::seal($requestJson, $this->getPublicKeyPem());
+        $packet      = new \Ulink\TransportPacket();
+        $packet->setRequest($requestJson);
+        $signature   = \Ulink\CryptoUtils::sign($requestJson, $this->getPrivateKeyPem());
+
+        $packet->setSignature($signature);
+        $packet->setClientId($this->getClientId());
+
+        return $packet->toJson();
+    }
+
+    /**
+     * @throws Exception\UlinkException
+     * @param string $rawData
+     * @return array
+     */
+    public function decrypt($rawData)
+    {
+        $packet = \Ulink\TransportPacket::createFromJson($rawData);
+
+        if (!$packet) {
+            throw new UlinkException('Can not decrypt packet!');
+        }
+
+        if ($this->getClientId() != $packet->getClientId()) {
+            throw new UlinkException('Client id does not match the id given in configuration!');
+        }
+
+        if (!$packet->getSignature()) {
+            throw new UlinkException('Packet signature is broken!');
+        }
+
+        if (!$packet->validateAgainstKey($this->getPublicKeyPem())) {
+            throw new UlinkException('Data signature does not match the packet content!');
+        }
+
+        $responseJson = \Ulink\CryptoUtils::unseal($packet->getRequest(), $this->getPrivateKeyPem());
+        $response = \Ulink\RequestFactory::createFromJson($responseJson);
+
+        $result = array(
+            'clientTransactionId' => $response->getClientTransactionId(),
+            'amount'              => (string)$response->getAmount(),
+            'currency'            => $response->getCurrency(),
+        );
+
+        $goBackUrl = $response->getGoBackUrl();
+        if ($goBackUrl) {
+            $result['goBackUrl'] = $goBackUrl;
+        }
+
+        $responseUrl = $response->getResponseUrl();
+        if ($responseUrl) {
+            $result['responseUrl'] = $responseUrl;
+        }
+
+        if (\Ulink\PaymentResponse::clazz() == get_class($response)) {
+            $result = array_merge($result, array(
+                'timestamp'  => $response->getTimestamp(),
+                'success'    => $response->isSuccess(),
+                'errors'     => $response->getErrors(),
+                'errorCodes' => $response->getErrorCodes(),
+                'isTest'     => $response->isTest(),
+            ));
+        }
+
+        $order = $response->getOrder();
+        if ($order && count($order->getItems())) {
+            $items = $order->getItems();
+            $result['order'] = array();
+            foreach ($items as $item) {
+                $result['order'][] = array(
+                    'name'         => $item->getName(),
+                    'description'  => $item->getDescription(),
+                    'oneItemPrice' => (string)$item->getOneItemPrice(),
+                    'quantity'     => $item->getQuantity(),
+                );
+            }
+        }
+
+        return $result;
+    }
+}
