@@ -23,9 +23,9 @@ $smarty->assign(
         'maksa_link' => (
             method_exists($link, 'getPageLink')
             ?
-            $link->getPageLink('my-account.php')
+            $link->getPageLink('order-detail.php')
             :
-            _PS_BASE_URL_.'my-account.php'
+            _PS_BASE_URL_.'order-detail.php'
         )
     )
 );
