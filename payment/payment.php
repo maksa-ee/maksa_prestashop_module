@@ -34,12 +34,12 @@ foreach($cart->getProducts() as $key => $product) {
     $order[] = $item;
 }
 
-$shopping = $cart->getOrderTotal(true, Cart::ONLY_SHIPPING);
-if ($shopping > 0) {
+$shipping = $cart->getOrderTotal(true, Cart::ONLY_SHIPPING);
+if ($shipping > 0) {
     $order[] = array(
         'name'         => 'Shipping',
         'description'  => '',
-        'oneItemPrice' => (string)$cart->getOrderTotal(true, Cart::ONLY_SHIPPING),
+        'oneItemPrice' => (string)$shipping,
         'quantity'     => 1,
     );
 }
