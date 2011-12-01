@@ -38,7 +38,7 @@ if ($rawData) {
                     (int)$responseData['clientTransactionId'],
                     Configuration::get('PS_OS_PAYMENT'),
                     (float)$responseData['amount'],
-                    $maksa->l('Payment OK'),
+                    $testPayment ? $maksa->l('Test OK') : $maksa->l('Payment OK'),
                     $secureKey
                 );
                 $response['msg'] = 'Payment success.';
@@ -50,7 +50,7 @@ if ($rawData) {
                     (int)$responseData['clientTransactionId'],
                     Configuration::get('PS_OS_ERROR'),
                     0,
-                    $maksa->l('Payment failure') . ': errors = { ' . implode(', ', $responseData['errors']) . ' }',
+                    ($testPayment ? $maksa->l('Test Failure') : $maksa->l('Payment Failure')) . ': errors = { ' . implode(', ', $responseData['errors']) . ' }',
                     $secureKey
                 );
                 $response['msg'] = 'Payment failure.';

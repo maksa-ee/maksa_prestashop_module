@@ -2,6 +2,9 @@
 
 global $_MODULE;
 $_MODULE = array();
+$_MODULE['<{maksa}prestashop>maksa_1ef8fcc97a378e72c48b682c8b050a8a'] = 'Публичный ключ Maksa.ee';
+$_MODULE['<{maksa}prestashop>maksa_49dc4c7d8bccb380fa6fcaf4f659aa72'] = 'Приватный ключ магазина';
+$_MODULE['<{maksa}prestashop>maksa_e9f7ceb4077ddfe2bc9bf2e3c86e654b'] = 'Обязательно:';
 $_MODULE['<{maksa}prestashop>maksa_444bcb3a3fcf8389296c49467f27e1d6'] = 'ok';
 $_MODULE['<{maksa}prestashop>maksa_c888438d14855d7d96a2724ee9c306bd'] = 'Настройки обновлены';
 $_MODULE['<{maksa}prestashop>maksa_51bd13ec273b011e71a73b9c6f617253'] = 'Настройки модуля maksa';

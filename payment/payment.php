@@ -27,7 +27,7 @@ $order = array();
 foreach($cart->getProducts() as $key => $product) {
     $item = array(
         'name'         => $product['name'],
-        'description'  => $product['description_short'],
+        'description'  => strip_tags($product['description_short']),
         'oneItemPrice' => (string)$product['price_wt'],
         'quantity'     => $product['cart_quantity'],
     );

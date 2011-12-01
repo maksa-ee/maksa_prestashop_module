@@ -96,7 +96,7 @@ class Maksa extends PaymentModule
         $config = Configuration::getMultiple($this->configurationKeys);
 
         $this->maksaTrans = array(
-            'payment_url' => $this->l('Paiment URL'),
+            'payment_url' => $this->l('Payment URL'),
             'client_id'   => $this->l('Client ID'),
             'public_key'  => $this->l('Maksa Public Key'),
             'private_key' => $this->l('Your Private Key'),
