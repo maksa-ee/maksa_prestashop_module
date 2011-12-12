@@ -24,7 +24,7 @@
  */
 
 require_once "UlinkException.php";
-spl_autoload_register(function($className)
+function maksa_ps_autoload($className)
 {
     $path = str_replace(array("_", "\\"), "/", $className);
     $parts = explode('/', $path);
@@ -36,7 +36,8 @@ spl_autoload_register(function($className)
         return true;
     }
     return false;
-});
+}
+spl_autoload_register('maksa_ps_autoload');
 
 /**
  * @author Cravler <http://github.com/cravler>
@@ -150,15 +151,15 @@ class UlinkService
 
         $data = array_merge($defaults, $data);
 
-        $request = new \Ulink\PaymentRequest();
+        $request = new Ulink_PaymentRequest();
         $request->setClientTransactionId($data['clientTransactionId']);
-        $request->setAmount(new \Ulink\Money($data['amount']));
+        $request->setAmount(new Ulink_Money($data['amount']));
         $request->setCurrency($data['currency'] ? $data['currency'] : $this->getDefaultCurrency());
         $request->setGoBackUrl($data['goBackUrl'] ? $data['goBackUrl'] : $this->getDefaultGoBackUrl());
         $request->setResponseUrl($data['responseUrl'] ? $data['responseUrl'] : $this->getDefaultResponseUrl());
 
         if (count($data['order'])) {
-            $_order = new \Ulink\Order();
+            $_order = new Ulink_Order();
             /**
              * $item = array(
              *     'name'         => 'Some Name',
@@ -169,10 +170,10 @@ class UlinkService
              */
             foreach ($data['order'] as $item) {
                 $_order->addItem(
-                    new \Ulink\OrderItem(
+                    new Ulink_OrderItem(
                         $item['name'],
                         $item['description'],
-                        new \Ulink\Money($item['oneItemPrice']),
+                        new Ulink_Money($item['oneItemPrice']),
                         (isset($item['quantity']) ? $item['quantity'] : 1)
                     )
                 );
@@ -182,10 +183,10 @@ class UlinkService
 
         $requestJson = $request->toJson();
 
-        $requestJson = \Ulink\CryptoUtils::seal($requestJson, $this->getPublicKeyPem());
-        $packet      = new \Ulink\TransportPacket();
+        $requestJson = Ulink_CryptoUtils::seal($requestJson, $this->getPublicKeyPem());
+        $packet      = new Ulink_TransportPacket();
         $packet->setRequest($requestJson);
-        $signature   = \Ulink\CryptoUtils::sign($requestJson, $this->getPrivateKeyPem());
+        $signature   = Ulink_CryptoUtils::sign($requestJson, $this->getPrivateKeyPem());
 
         $packet->setSignature($signature);
         $packet->setClientId($this->getClientId());
@@ -200,7 +201,7 @@ class UlinkService
      */
     public function decrypt($rawData)
     {
-        $packet = \Ulink\TransportPacket::createFromJson($rawData);
+        $packet = Ulink_TransportPacket::createFromJson($rawData);
 
         if (!$packet) {
             throw new UlinkException('Can not decrypt packet!');
@@ -218,8 +219,8 @@ class UlinkService
             throw new UlinkException('Data signature does not match the packet content!');
         }
 
-        $responseJson = \Ulink\CryptoUtils::unseal($packet->getRequest(), $this->getPrivateKeyPem());
-        $response = \Ulink\RequestFactory::createFromJson($responseJson);
+        $responseJson = Ulink_CryptoUtils::unseal($packet->getRequest(), $this->getPrivateKeyPem());
+        $response = Ulink_RequestFactory::createFromJson($responseJson);
 
         $result = array(
             'clientTransactionId' => $response->getClientTransactionId(),
@@ -237,7 +238,7 @@ class UlinkService
             $result['responseUrl'] = $responseUrl;
         }
 
-        if (\Ulink\PaymentResponse::clazz() == get_class($response)) {
+        if (Ulink_PaymentResponse::clazz() == get_class($response)) {
             $result = array_merge($result, array(
                 'timestamp'  => $response->getTimestamp(),
                 'success'    => $response->isSuccess(),

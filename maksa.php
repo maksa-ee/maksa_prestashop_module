@@ -105,11 +105,11 @@ class Maksa extends PaymentModule
         foreach ($this->configurationKeys as $key) {
             $valKey = strtolower(str_replace('MAKSA_', '', $key));
             $defKey = explode('_', $valKey);
-            array_walk($defKey, function(&$str, $index) {
+            foreach($defKey as $index => &$str) {
                 if ($index) {
                     $str = ucfirst($str);
                 }
-            });
+            };
             $defKey = implode($defKey);
 
             if (isset($config[$key])) {
@@ -221,11 +221,11 @@ class Maksa extends PaymentModule
                     foreach ($this->configurationKeys as $key) {
                         $valKey = strtolower(str_replace('MAKSA_', '', $key));
                         $defKey = explode('_', $valKey);
-                        array_walk($defKey, function(&$str, $index) {
+                        foreach($defKey as $index => &$str) {
                             if ($index) {
                                 $str = ucfirst($str);
                             }
-                        });
+                        };
                         $defKey = implode($defKey);
 
                         $value  = htmlentities(Tools::getValue($valKey, $this->{$defKey}), ENT_COMPAT, 'UTF-8');
