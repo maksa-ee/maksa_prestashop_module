@@ -148,6 +148,7 @@ class Maksa extends PaymentModule
         }
 
         $this->getSmarty()->assign('logo', _MODULE_DIR_.$this->name.'/maksa30.png');
+        $this->getSmarty()->assign('images_path', _MODULE_DIR_.$this->name.'/images');
         return $this->display(__FILE__, 'maksa.tpl');
     }
 
