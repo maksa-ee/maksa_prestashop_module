@@ -68,7 +68,7 @@ checkwaitingorder();
 
     <p class="cart_navigation">
         <form action="{$maksa_link}">
-            <input type="hidden" name="id_order" value="{$id_cart|intval}" />
+            <input type="hidden" name="id_order" value="{$id_order|intval}" />
             <input type="submit" value="{l s='Go to order' mod='maksa'} &raquo;" class="exclusive_large" />
         </form>
 
