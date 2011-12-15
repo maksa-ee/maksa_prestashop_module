@@ -17,7 +17,7 @@ $link = new Link();
 $smarty->assign(
     array(
         'id_module'  => $id_module,
-        'id_cart'    => Order::getOrderByCartId($id_cart),
+        'id_cart'    => $id_cart,
         'key'        => $key,
         'maksa_link' => (
             method_exists($link, 'getPageLink')
