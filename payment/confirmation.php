@@ -14,14 +14,10 @@ $key = Db::getInstance()->getValue(
 );
 
 $link = new Link();
-
-var_dump(Order::getOrderByCartId($id_cart));
-
 $smarty->assign(
     array(
         'id_module'  => $id_module,
         'id_cart'    => $id_cart,
-        'id_order'    => Order::getOrderByCartId($id_cart),
         'key'        => $key,
         'maksa_link' => (
             method_exists($link, 'getPageLink')

@@ -56,6 +56,7 @@ if ($rawData) {
                 $response['msg'] = 'Payment failure.';
             }
 
+            $response['order_id'] = Order::getOrderByCartId((int)$responseData['clientTransactionId']);
             $response['status'] = 'OK';
         }
     } catch (UlinkException $e) {

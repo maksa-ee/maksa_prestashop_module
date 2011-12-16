@@ -17,12 +17,16 @@ function checkwaitingorder()
             url:'{$base_dir}modules/maksa/payment/checkwaitingorder.php',
             data:'id_cart={$id_cart|intval}&id_module={$id_module|intval}&key={$key|escape}',
             success: function (r) {ldelim}
-                if (r == 'ok') {
+                var data = $.parseJSON(r);
+
+                if (data.status == 'ok') {
+                    $("#maksa-payment-order-id").val(data.id_order);
                     $("#maksa-result-div").show();
                     $("#maksa-payment-ok").show();
                     $("#maksa-loading-status").hide();
                     maksaWaiting = false;
-                } else if(r == 'not_ok') {
+                } else if(data.status == 'not_ok') {
+                    $("#maksa-payment-order-id").val(data.id_order);
                     $("#maksa-result-div").show();
                     $("#maksa-payment-fail").show();
                     $("#maksa-loading-status").hide();
@@ -68,7 +72,7 @@ checkwaitingorder();
 
     <p class="cart_navigation">
         <form action="{$maksa_link}">
-            <input type="hidden" name="id_order" value="{$id_order|intval}" />
+            <input id="maksa-payment-order-id" type="hidden" name="id_order" value="" />
             <input type="submit" value="{l s='Go to order' mod='maksa'} &raquo;" class="exclusive_large" />
         </form>
 
