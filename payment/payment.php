@@ -8,9 +8,9 @@ include_once(_PS_MODULE_DIR_.'maksa/payment/UlinkService.php');
 
 //include(_PS_ROOT_DIR_.'/header.php');
 
-if (!$cookie->isLogged()) {
-    Tools::redirect('authentication.php?back=order.php');
-}
+//if (!$cookie->isLogged()) {
+//    Tools::redirect('authentication.php?back=order.php');
+//}
 
 $maksa = new Maksa();
 
