@@ -6,7 +6,7 @@ include_once(dirname(__FILE__).'/../../../init.php');
 include_once(_PS_MODULE_DIR_.'maksa/maksa.php');
 include_once(_PS_MODULE_DIR_.'maksa/payment/UlinkService.php');
 
-include(_PS_ROOT_DIR_.'/header.php');
+//include(_PS_ROOT_DIR_.'/header.php');
 
 if (!$cookie->isLogged()) {
     Tools::redirect('authentication.php?back=order.php');
@@ -52,6 +52,6 @@ $signedRequest = $ulinkService->encrypt(
     )
 );
 
-echo $maksa->execPayment($maksa->getPaymentUrl(), $signedRequest);
+echo $maksa->execPayment(Tools::getValue('type'), $maksa->getPaymentUrl(), $signedRequest);
 
-include(_PS_ROOT_DIR_.'/footer.php');
+//include(_PS_ROOT_DIR_.'/footer.php');

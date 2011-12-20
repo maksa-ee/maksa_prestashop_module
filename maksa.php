@@ -148,18 +148,24 @@ class Maksa extends PaymentModule
         }
 
         $this->getSmarty()->assign('logo', _MODULE_DIR_.$this->name.'/maksa30.png');
+        $this->getSmarty()->assign('js_path', _MODULE_DIR_.$this->name.'/js');
         $this->getSmarty()->assign('images_path', _MODULE_DIR_.$this->name.'/images');
         return $this->display(__FILE__, 'maksa.tpl');
     }
 
-    public function execPayment($paymentUrl, $signedRequest)
+    public function execPayment($bank,$paymentUrl, $signedRequest)
     {
         if (!$this->active) {
             return;
         }
 
+        if (!preg_match('/^[a-z]+$/', $bank)) {
+            $bank = '';
+        }
+
         $this->getSmarty()->assign(
             array(
+                'bank' => $bank,
                 'maksa_url'      => $paymentUrl,
                 'signed_request' => $signedRequest,
             )

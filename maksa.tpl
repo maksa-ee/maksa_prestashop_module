@@ -1,27 +1,56 @@
 
 <style type="text/css">
-    p.maksa-block a img {
-        margin: 5px;
-    }
-    p.maksa-block a {
+    .maksa-block {
+        margin: 0.5em 0;
+        margin-left: 0.7em;
+
         border: 1px solid gray;
         display: block;
         padding: 0.6em;
         text-decoration: none;
         text-align: center;
     }
+    .maksa-block a:hover {
+        background-color: green;
+    }
+    .maksa-block .link-set a {
+        border: none;
+        display: block;
+        float: left;
+        padding: 5px;
+        height: 60px;
+    }
+
 </style>
-<p class="payment_module maksa-block">
+<div class="maksa-block">
 
-    <a href="{$base_dir_ssl}modules/maksa/payment/payment.php" title="{l s='Pay with Maksa.ee' mod='maksa'}">
+    <div class="link-set">
+        <a href="{$base_dir_ssl}modules/maksa/payment/payment.php?type=swedbank" title="{l s='Pay with Maksa.ee' mod='maksa'}">
+            <img src="{$images_path}/swedbank.png" alt="swedbank">
+        </a>
+        <a href="{$base_dir_ssl}modules/maksa/payment/payment.php?type=seb" title="{l s='Pay with Maksa.ee' mod='maksa'}">
+            <img src="{$images_path}/seb.gif" alt="seb">
+        </a>
+        <a href="{$base_dir_ssl}modules/maksa/payment/payment.php?type=nordea" title="{l s='Pay with Maksa.ee' mod='maksa'}">
+            <img src="{$images_path}/nordea.gif" alt="nordea">
+        </a>
+        <a href="{$base_dir_ssl}modules/maksa/payment/payment.php?type=krep" title="{l s='Pay with Maksa.ee' mod='maksa'}">
+            <img src="{$images_path}/krep.gif" alt="krep">
+        </a>
+    </div>
 
-        <img src="{$images_path}/swedbank.png" alt="swedbank">
-        <img src="{$images_path}/seb.gif" alt="seb">
-        <img src="{$images_path}/nordea.gif" alt="nordea">
-        <img src="{$images_path}/krep.gif" alt="nordea">
+    <div style="padding-top: 10px; clear: both;">
+        <span style="background: url({$logo}) no-repeat scroll left center transparent;line-height: 50px; clear: both; padding: 20px 40px;">
+            {l s='Maksa.ee. Turvaline makse panga ülekandega' mod='maksa'}
+        </span><br />
+        <img id="loader-img" style="display: none;" src="{$images_path}/ajax-loader.gif" />
+    </div>
 
-        <img src="{$logo}" alt="maksa.ee">
+    <div id="payment-form"></div>
 
-        {l s='Maksa.ee. Turvaline makse panga ülekandega' mod='maksa'}
-    </a>
-</p>
+</div>
+
+<script type="text/javascript">
+    BASEDIR = '{$base_dir_ssl}';
+</script>
+<script type="text/javascript" src="{$js_path}/payment.js"></script>
